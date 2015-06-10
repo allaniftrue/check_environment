@@ -3,4 +3,4 @@ description = A module that informs user of the the environment through color.
 core = 7.x
 package = Environment
 version = 7.x-1.0
-stylesheets[all][]=checkEnv.css
+stylesheets[all][]=check_environment.css

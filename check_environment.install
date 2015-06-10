@@ -7,10 +7,9 @@
 
 /**
  * Implements hook_schema()
- * @return array  DB table
  */
 function check_environment_schema() {
-   $schema['check_environment'] = array(
+  $schema['check_environment'] = array(
     'description' => 'A simple table to store the dev environment',
     'fields' => array(
       'eid' => array(
@@ -47,13 +46,18 @@ function check_environment_schema() {
    return $schema;
 }
 
-
+/**
+ * Adds schema on existing DB if it doesn't exist
+ */
 function check_environment_enable() {
   if(db_table_exists('check_environment') == FALSE) {
     drupal_install_schema('check_environment');
   }
 }
 
+/**
+ * Drops schema if it exisit
+ */
 function check_environment_disable() {
   if(db_table_exists('check_environment') == TRUE) {
     drupal_uninstall_schema('check_environment');
