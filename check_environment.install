@@ -1,0 +1,61 @@
+<?php
+
+/**
+ * @file
+ * Install, function for check_environment module.
+ */
+
+/**
+ * Implements hook_schema()
+ * @return array  DB table
+ */
+function check_environment_schema() {
+   $schema['check_environment'] = array(
+    'description' => 'A simple table to store the dev environment',
+    'fields' => array(
+      'eid' => array(
+        'description' => 'The primary identifier for the environment.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'The last user to update the environment',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'url_live' => array(
+        'description' => 'The live url',
+        'length' => 255,
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => ''
+      ),
+      'url_staging' => array(
+        'description' => 'The staging url',
+        'length' => 255,
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => ''
+      ),
+    ),
+    'primary key' => array('eid'),
+  );
+
+   return $schema;
+}
+
+
+function check_environment_enable() {
+  if(db_table_exists('check_environment') == FALSE) {
+    drupal_install_schema('check_environment');
+  }
+}
+
+function check_environment_disable() {
+  if(db_table_exists('check_environment') == TRUE) {
+    drupal_uninstall_schema('check_environment');
+  }
+}

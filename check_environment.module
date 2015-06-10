@@ -1,0 +1,201 @@
+<?php
+/**
+ * @file
+ * all main functions of check_environment module goes here.
+ */
+
+/**
+ * Bootstrap data on load
+ * @return text
+ * @todo  position staging properly
+ * @todo  remove on front-end
+ */
+function check_environment_init() {
+
+  if(user_is_logged_in()) {
+    $storedValues = check_environment_get_env();
+
+    $currentUrl = $_SERVER['HTTP_HOST'];
+    $staging =  trim($storedValues["url_staging"]);
+    $live =  trim($storedValues["url_live"]);
+
+    //Assuming user didn't read the info
+    $staging = str_replace('http://', "", $staging);
+    $live = str_replace('http://', "", $live);
+
+
+    if($currentUrl == $staging) {
+      $env = 'check_environment_staging';
+      $bg = '#1abc9c';
+    } else if($currentUrl == $live){
+      $env = 'check_environment_live';
+      $bg = "#e74c3c";
+    } else {
+      $env = "check_environment_unknown";
+    }
+
+    echo t('<div class="'.$env.'"></div>');
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function check_environment_menu() {
+
+  $items = array();
+
+  $items['admin/config/development/check_environment'] = array(
+    'title' => 'Dev Environment',
+    'description' => 'The environment form',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('check_environment_form'), //callback
+    'access callback' => '_check_environment_access_check',
+    'access arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+/**
+ * Custom access checking function.
+ * @param userObj $account
+ */
+function _check_environment_access_check($account) {
+  return TRUE; // Everyone have access for now
+}
+
+/**
+ * Callback function.
+ */
+function check_environment_form() {
+  // Lets create the form here.
+  $values = array();
+
+  $values = _check_environment_prepare_form_values();
+
+  $form['info'] = array(
+    '#markup' => '<ul style="color:red">
+                    <li>Please enter a valid url without the trailing slash</li>
+                    <li>Please use the base domain</li>
+                    <li>Remove the url scheme and add the port used example: <em>google.com:80</em></li>
+                  </ul>'
+  );
+
+  // Live.
+  $form['url_live'] = array(
+    '#title' => t('LIVE URL'),
+    '#type' => 'textfield',
+    '#placeholder' => 'example: google.com:80',
+    '#default_value' => !empty($values['url_live']) ? check_plain($values['url_live']) : '',
+    '#required' => TRUE,
+  );
+
+  // Staging.
+  $form['url_staging'] = array(
+    '#title' => t('STAGING URL'),
+    '#type' => 'textfield',
+    '#placeholder' => 'example: localhost:8080',
+    '#default_value' => !empty($values['url_staging']) ? check_plain($values['url_staging']) : '',
+    '#required' => TRUE,
+  );
+
+  // eid.
+  $form['eid'] = array(
+    '#type' => 'hidden',
+    '#default_value' => !empty($values['eid']) ? check_plain($values['eid']) : ''
+  );
+
+  // Don't forget the submit button
+  if(count($values) > 0) {
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => 'Update',
+    );
+  } else {
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => 'Save',
+    );
+  }
+
+  return $form;
+}
+
+/**
+ * Load exisiting config from DB.
+ * @return array form_values
+ */
+function _check_environment_prepare_form_values() {
+  return check_environment_get_env();
+}
+
+/**
+ * Form submit callback for check_environment_form.
+ *
+ * @param array $form
+ * @param array $form_state
+ */
+function check_environment_form_submit($form, &$form_state) {
+  global $user;
+
+  // Save the search if name was provided.
+  if (!empty($form_state['values']['url_live']) && !empty($form_state['values']['url_staging'])) {
+    // Save notification
+    if(! empty($form_state['values']['eid'])) {
+      _check_environment_update($form_state['values']);
+    } else {
+      _check_environment_save($form_state['values']);
+    }
+    drupal_set_message(t('Development Environment has been saved.'));
+    drupal_goto('admin/config/development/check_environment');
+  }
+}
+
+/**
+ * Save the form.
+ * @param array $values
+ *  drupal form_state values
+ */
+function _check_environment_save($values) {
+  global $user;
+
+  $record = array(
+    'uid' => $user->uid,
+    'url_live' => $values['url_live'],
+    'url_staging' => $values['url_staging']
+  );
+  drupal_write_record('check_environment', $record);
+}
+
+/**
+ * Update the form
+ * @param  array $values input values from the form
+ */
+function _check_environment_update($values) {
+  global $user;
+
+  $record = array(
+    'uid' => $user->uid,
+    'url_live' => $values['url_live'],
+    'url_staging' => $values['url_staging']
+  );
+
+  $num_updated = db_update('check_environment')
+  ->fields($record)
+  ->condition('eid', $values['eid'])
+  ->execute();
+
+}
+
+/**
+ * load stored env from db.
+ * @return db record.
+ */
+function check_environment_get_env() {
+  return db_select('check_environment', 'ce')
+  ->fields('ce')
+  ->execute()
+  ->fetchAssoc();
+}

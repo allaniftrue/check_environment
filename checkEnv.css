@@ -1,0 +1,23 @@
+.check_environment_staging,
+.check_environment_live,
+.check_environment_unkown {
+    position: fixed;
+    left:0;
+    top: 0;
+    width: 20px;
+    height: 100vh;
+    z-index: -1;
+}
+
+.check_environment_staging {
+    background:#1abc9c url(images/staging.png) repeat-y;
+}
+
+.check_environment_live {
+    background:#e74c3c url(images/live.png) repeat-y;
+}
+
+.check_environment_unkown {
+    background:#9b59b6 url(images/unknown.png) repeat-y;
+}
+
