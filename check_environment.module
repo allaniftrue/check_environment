@@ -5,37 +5,39 @@
  */
 
 /**
- * Bootstrap data on load
- * @return text
- * @todo  position staging properly
- * @todo  remove on front-end
+ * Implements hook_page_build()
+ * @return array
  */
-function check_environment_init() {
+function check_environment_page_build(&$page) {
 
-  if(user_is_logged_in()) {
-    $storedValues = check_environment_get_env();
+  $storedValues = check_environment_get_env();
 
-    $currentUrl = $_SERVER['HTTP_HOST'];
-    $staging =  trim($storedValues["url_staging"]);
-    $live =  trim($storedValues["url_live"]);
+  $currentUrl = $_SERVER['HTTP_HOST'];
+  $staging =  trim($storedValues["url_staging"]);
+  $live =  trim($storedValues["url_live"]);
 
-    //Assuming user didn't read the info
-    $staging = str_replace('http://', "", $staging);
-    $live = str_replace('http://', "", $live);
+  //Assuming user didn't read the info
+  $staging = str_replace('http://', "", $staging);
+  $live = str_replace('http://', "", $live);
 
 
-    if($currentUrl == $staging) {
-      $env = 'check_environment_staging';
-      $bg = '#1abc9c';
-    } else if($currentUrl == $live){
-      $env = 'check_environment_live';
-      $bg = "#e74c3c";
-    } else {
-      $env = "check_environment_unknown";
-    }
-
-    echo t('<div class="'.$env.'"></div>');
+  if($currentUrl == $staging) {
+    $env = 'check_environment_staging';
+    $bg = '#1abc9c';
+  } else if($currentUrl == $live){
+    $env = 'check_environment_live';
+    $bg = "#e74c3c";
+  } else {
+    $env = "check_environment_unknown";
   }
+
+  $page['content'][] = array(
+    '#markup' => t('<div class="'.$env.'"></div>'),
+    '#weight' => 0,
+  );
+
+  return $page;
+
 }
 
 /**
