@@ -23,10 +23,8 @@ function check_environment_page_build(&$page) {
 
   if($currentUrl == $staging) {
     $env = 'check_environment_staging';
-    $bg = '#1abc9c';
   } else if($currentUrl == $live){
     $env = 'check_environment_live';
-    $bg = "#e74c3c";
   } else {
     $env = "check_environment_unknown";
   }
