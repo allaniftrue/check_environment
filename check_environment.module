@@ -10,31 +10,33 @@
  */
 function check_environment_page_build(&$page) {
 
-  $storedValues = check_environment_get_env();
+  if(user_is_logged_in()) {
 
-  $currentUrl = $_SERVER['HTTP_HOST'];
-  $staging =  trim($storedValues["url_staging"]);
-  $live =  trim($storedValues["url_live"]);
+    $storedValues = check_environment_get_env();
 
-  //Assuming user didn't read the info
-  $staging = str_replace('http://', "", $staging);
-  $live = str_replace('http://', "", $live);
+    $currentUrl = $_SERVER['HTTP_HOST'];
+    $staging =  trim($storedValues["url_staging"]);
+    $live =  trim($storedValues["url_live"]);
 
+    //Assuming user didn't read the info
+    $staging = str_replace('http://', "", $staging);
+    $live = str_replace('http://', "", $live);
 
-  if($currentUrl == $staging) {
-    $env = 'check_environment_staging';
-  } else if($currentUrl == $live){
-    $env = 'check_environment_live';
-  } else {
-    $env = "check_environment_unknown";
+    if($currentUrl == $staging) {
+      $env = 'check_environment_staging';
+    } else if($currentUrl == $live){
+      $env = 'check_environment_live';
+    } else {
+      $env = "check_environment_unknown";
+    }
+
+    $page['content'][] = array(
+      '#markup' => t('<div class="'.$env.'"></div>'),
+      '#weight' => 0,
+    );
+
+    return $page;
   }
-
-  $page['content'][] = array(
-    '#markup' => t('<div class="'.$env.'"></div>'),
-    '#weight' => 0,
-  );
-
-  return $page;
 
 }
 
